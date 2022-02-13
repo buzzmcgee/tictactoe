@@ -1,0 +1,19 @@
+{
+  "name": "buzz/ttt",
+  "config": {
+    "platform": {
+      "php": "7.4"
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "Buzz\\TTT\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Gensicke",
+      "email": "s.gensicke@gmail.com"
+    }
+  ]
+}
