@@ -54,21 +54,35 @@ class GameController
 
         switch ($uri) {
             case '/new/player':
+                // init new game and store board
                 $board = $this->gameService->createGame();
 
                 $this->sessionService->storeBoard($board);
                 break;
             case '/new/computer':
+                // init new game, computer makes first move and store board
                 $board = $this->gameService->createGame();
 
-                $coordinates = $this->gameService->bestNextMove($board);
+                $coordinates = $this->gameService->bestNextMove($board, O, X);
                 $this->gameService->makeMove($board, $coordinates[0], $coordinates[1], O);
 
                 $this->sessionService->storeBoard($board);
                 break;
             case '/move':
+                // load board and check validity
+                // get human coordinates and add human move
+                // check for winners/tie
+                // get computer coordinates and add computer move
+                // check for winners/tie
+                // store board
                 $board = $this->sessionService->loadBoard();
+                if(is_null($board)){
+                    $error = true;
+                    break;
+                }
+
                 if (!$this->gameService->isValidLayout($board->getCurrentLayout())) {
+                    $board = null;
                     $error = true;
                     break;
                 }
@@ -80,7 +94,7 @@ class GameController
                     $this->gameService->updateWinner($board);
 
                     if (!$board->hasWinner()) {
-                        $coordinates = $this->gameService->bestNextMove($board);
+                        $coordinates = $this->gameService->bestNextMove($board, O, X);
                         if (is_null($coordinates)) {
                             $board->setTie();
                         }
@@ -96,11 +110,19 @@ class GameController
                 }
                 break;
             case '/reset':
+                // reset board
                 $this->sessionService->clearBoard();
                 break;
             default:
+                // load board and check validity
                 $board = $this->sessionService->loadBoard();
+                if(is_null($board)){
+                    $error = true;
+                    break;
+                }
+
                 if (!$this->gameService->isValidLayout($board->getCurrentLayout())) {
+                    $board = null;
                     $error = true;
                     break;
                 }
@@ -115,7 +137,7 @@ class GameController
      * Get Coordinates from Request
      *
      * @param Request $request
-     * @return ?array
+     * @return null|array
      */
     public function getCoordinates(Request $request): ?array
     {
@@ -142,7 +164,7 @@ class GameController
      * @param bool $error
      * @return void
      */
-    private function render(?Board $board, bool $error)
+    private function render(?Board $board, bool $error): void
     {
         $response = new Response();
 

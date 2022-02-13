@@ -193,6 +193,7 @@ class GameServiceTest extends TestCase
             ],
         ];
     }
+
     /**
      * @return void
      * @dataProvider validationDataSets
@@ -279,10 +280,8 @@ class GameServiceTest extends TestCase
      */
     public function testBestNextMove($currentSet, $nextSet)
     {
-        $this->markTestIncomplete();
-
         $board = new Board($currentSet);
-        $nextMove = $this->gameService->bestNextMove($board);
+        $nextMove = $this->gameService->bestNextMove($board, O, X);
         $this->gameService->makeMove($board, $nextMove[0], $nextMove[1], O);
 
         $this->assertSame($nextSet, $board->getCurrentLayout());
@@ -322,6 +321,42 @@ class GameServiceTest extends TestCase
                     [X, _, _],
                     [_, O, _],
                     [_, _, _],
+                ]
+            ],
+            'human start ul #2' => [
+                'current' => [
+                    [X, X, _],
+                    [_, O, _],
+                    [_, _, _],
+                ],
+                'next' => [
+                    [X, X, O],
+                    [_, O, _],
+                    [_, _, _],
+                ]
+            ],
+            'human start ul #3' => [
+                'current' => [
+                    [X, X, O],
+                    [_, O, _],
+                    [X, _, _],
+                ],
+                'next' => [
+                    [X, X, O],
+                    [O, O, _],
+                    [X, _, _],
+                ]
+            ],
+            'human start ul #4' => [
+                'current' => [
+                    [X, X, O],
+                    [O, O, X],
+                    [X, _, _],
+                ],
+                'next' => [
+                    [X, X, O],
+                    [O, O, X],
+                    [X, O, _],
                 ]
             ],
         ];

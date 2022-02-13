@@ -21,17 +21,28 @@ class GameService
      * Find best next move on board
      *
      * @param Board $board
+     * @param int $playerValue
+     * @param int $opponentValue
      * @return null|array
      */
-    public function bestNextMove(Board $board): ?array
+    public function bestNextMove(Board $board, int $playerValue, int $opponentValue): ?array
     {
         $boardLayout = $board->getCurrentLayout();
 
         $move = null;
+        $maxScore = -2;
         foreach ($boardLayout as $rowIndex => $row) {
             foreach ($row as $colIndex => $col) {
                 if ($col === _) {
-                    $move = [$rowIndex,$colIndex];
+                    $board->setCell($rowIndex, $colIndex, $playerValue);
+                    $score = $this->checkMovesAhead($board->getCurrentLayout(), false, 1, $playerValue, $opponentValue);
+                    if ($score > $maxScore) {
+                        $maxScore = $score;
+                        $move = [$rowIndex, $colIndex];
+                    }
+
+                    // reset cell for next try
+                    $board->setCell($rowIndex, $colIndex, _);
                 }
             }
         }
@@ -40,27 +51,77 @@ class GameService
     }
 
     /**
-     * Add Player Move to Board
+     * Use MinMax-approach to find best score for given player
      *
-     * @param Board $board
-     * @param int $row
-     * @param int $column
-     * @param int $value
-     * @return void
+     * @param array $cellLayout
+     * @param bool $isPlayerTurn
+     * @param int $depth
+     * @param int $playerValue
+     * @param int $opponentValue
+     * @return int
      */
+    private function checkMovesAhead(
+        array $cellLayout,
+        bool $isPlayerTurn,
+        int $depth,
+        int $playerValue,
+        int $opponentValue
+    ): int {
+        $board = new Board($cellLayout);
+        $this->updateWinner($board);
 
-    public function makeMove(Board $board, int $row, int $column, int $value): bool
-    {
-        return $board->setCell($row, $column, $value);
+        if ($board->hasWinner()) {
+            $result = -1; // opponent won this move
+            if ($board->getWinner() === $playerValue) {
+                $result = 1; // player won this move
+            } elseif ($board->getWinner() === _) {
+                $result = 0; // game tied
+            }
+
+            return $result;
+        }
+
+        $maxScore = 2;
+        $nextTurnPlayerValue = $opponentValue;
+        if ($isPlayerTurn) {
+            $maxScore = -2;
+            $nextTurnPlayerValue = $playerValue;
+        }
+
+        foreach ($cellLayout as $rowIndex => $row) {
+            foreach ($row as $colIndex => $col) {
+                if ($col === _) {
+                    $board->setCell($rowIndex, $colIndex, $nextTurnPlayerValue);
+                    $score = $this->checkMovesAhead(
+                        $board->getCurrentLayout(),
+                        !$isPlayerTurn,
+                        $depth + 1,
+                        $playerValue,
+                        $opponentValue
+                    );
+
+                    if ($isPlayerTurn) {
+                        $maxScore = max($score, $maxScore); // is score for player better than before?
+                    } else {
+                        $maxScore = min($score, $maxScore); // is score for player worse than before?
+                    }
+
+                    // reset cell for next try
+                    $board->setCell($rowIndex, $colIndex, _);
+                }
+            }
+        }
+
+        return $maxScore;
     }
 
     /**
      * Check the current board layout for a winner or tie and update board accordingly
      *
-     * @param Board|null $board
+     * @param Board $board
      * @return bool
      */
-    public function updateWinner(?Board $board): bool
+    public function updateWinner(Board $board): bool
     {
         $cellLayout = $board->getCurrentLayout();
 
@@ -74,7 +135,7 @@ class GameService
         foreach ($cellLayout as $rowIndex => $row) {
             $winningLines['r'][$rowIndex] = array_sum($row);
 
-            $emptyFieldsLeft += array_count_values($row)[0] ?? 0;
+            $emptyFieldsLeft += array_count_values($row)[_] ?? 0;
 
             foreach ($row as $colIndex => $col) {
                 $winningLines['c'][$colIndex] += $col;
@@ -102,6 +163,21 @@ class GameService
         }
 
         return false;
+    }
+
+    /**
+     * Add Player Move to Board
+     *
+     * @param Board $board
+     * @param int $row
+     * @param int $column
+     * @param int $value
+     * @return void
+     */
+
+    public function makeMove(Board $board, int $row, int $column, int $value): bool
+    {
+        return $board->setCell($row, $column, $value);
     }
 
     /**

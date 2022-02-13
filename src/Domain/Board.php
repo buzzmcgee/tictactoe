@@ -22,16 +22,6 @@ class Board
     }
 
     /**
-     * return current board layout
-     *
-     * @return void
-     */
-    public function getCurrentLayout(): array
-    {
-        return $this->cellLayout;
-    }
-
-    /**
      * Set player value at coordinates
      *
      * @param int $row
@@ -46,7 +36,7 @@ class Board
             return false;
         }
 
-        // no player value on used cell
+        // trying to reset cell or no player value on cell
         if (($value !== _) && $this->cellLayout[$row][$column] !== _) {
             return false;
         }
@@ -73,6 +63,24 @@ class Board
     }
 
     /**
+     * return current board layout
+     *
+     * @return void
+     */
+    public function getCurrentLayout(): array
+    {
+        return $this->cellLayout;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasWinner(): bool
+    {
+        return !is_null($this->getWinner());
+    }
+
+    /**
      * @return int|null
      */
     public function getWinner(): ?int
@@ -86,14 +94,6 @@ class Board
     public function setWinner(int $winner): void
     {
         $this->winner = $winner;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasWinner(): bool
-    {
-        return !is_null($this->getWinner());
     }
 
     /**
