@@ -6,15 +6,16 @@
 </head>
 <body>
 <h1>Tic Tac Toe</h1>
+
+{% if error %}
+    <div style="color: red">Invalid Action, try again</div>
+{% endif %}
+
 {% if showNewGame %}
     Who has the first move?<br/>
     <a href="/new/player">Player</a> | <a href="/new/computer">Computer</a>
 {% else %}
     {{ include('board.html.twig') }}
-{% endif %}
-
-{% if error %}
-    <span style="color: red">ERROR</span>
 {% endif %}
 </body>
 </html>

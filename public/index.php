@@ -16,8 +16,6 @@ $request = Request::createFromGlobals();
 $templateLoader = new FilesystemLoader('../templates');
 $templateEnv = new Environment($templateLoader, ['cache' => false]);
 
-(new GameController(
-    new GameService(),
-    new SessionService(new Session()),
-    $templateEnv
-))->handle($request);
+(new GameController())
+    ->addServices(new GameService(), new SessionService(new Session()), $templateEnv)
+    ->handle($request);

@@ -7,7 +7,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Buzz\\TTT\\": "src/"
+      "Buzz\\TTT\\": "src/",
+      "Buzz\\Tests\\": "tests/"
     }
   },
   "authors": [

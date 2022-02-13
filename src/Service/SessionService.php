@@ -6,6 +6,7 @@ use Buzz\TTT\Domain\Board;
 
 class SessionService
 {
+    /** @var mixed */
     private $session;
 
     public function __construct($session) {
@@ -24,7 +25,7 @@ class SessionService
     }
 
     /**
-     * create board from session data
+     * Create board from session data
      *
      * @return Board|null
      */
@@ -40,7 +41,7 @@ class SessionService
     }
 
     /**
-     * remove board layout from session
+     * Remove board layout from session
      *
      * @return void
      */

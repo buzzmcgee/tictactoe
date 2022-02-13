@@ -16,10 +16,24 @@ class GameController
     private ?SessionService $sessionService;
     private ?Environment $templateEnv;
 
-    public function __construct(GameService $gameService, SessionService $sessionService, Environment $templateEnv) {
+    /**
+     * Add necessary services
+     *
+     * @param GameService $gameService
+     * @param SessionService $sessionService
+     * @param Environment $templateEnv
+     * @return self
+     */
+    public function addServices(
+        GameService $gameService,
+        SessionService $sessionService,
+        Environment $templateEnv
+    ): self {
         $this->gameService = $gameService;
         $this->sessionService = $sessionService;
         $this->templateEnv = $templateEnv;
+
+        return $this;
     }
 
     /**
@@ -30,6 +44,10 @@ class GameController
      */
     public function handle(Request $request)
     {
+        if ((!isset($this->gameService, $this->sessionService, $this->templateEnv))) {
+            $this->sendNotFound();
+        }
+
         $uri = $request->getRequestUri();
         $board = null;
         $error = false;
@@ -43,19 +61,78 @@ class GameController
             case '/new/computer':
                 $board = $this->gameService->createGame();
 
+                $coordinates = $this->gameService->bestNextMove($board);
+                $this->gameService->makeMove($board, $coordinates[0], $coordinates[1], O);
+
                 $this->sessionService->storeBoard($board);
                 break;
             case '/move':
                 $board = $this->sessionService->loadBoard();
+                if (!$this->gameService->isValidLayout($board->getCurrentLayout())) {
+                    $error = true;
+                    break;
+                }
+
+                $coordinates = $this->getCoordinates($request);
+                $error = !$this->gameService->makeMove($board, $coordinates[0], $coordinates[1], X);
+
+                if (!$error) {
+                    $this->gameService->updateWinner($board);
+
+                    if (!$board->hasWinner()) {
+                        $coordinates = $this->gameService->bestNextMove($board);
+                        if (is_null($coordinates)) {
+                            $board->setTie();
+                        }
+
+                        if (!$board->isTie()) {
+                            $this->gameService->makeMove($board, $coordinates[0], $coordinates[1], O);
+
+                            $this->gameService->updateWinner($board);
+                        }
+                    }
+
+                    $this->sessionService->storeBoard($board);
+                }
                 break;
             case '/reset':
                 $this->sessionService->clearBoard();
                 break;
             default:
                 $board = $this->sessionService->loadBoard();
+                if (!$this->gameService->isValidLayout($board->getCurrentLayout())) {
+                    $error = true;
+                    break;
+                }
+
+                $this->gameService->updateWinner($board);
         }
 
         $this->render($board, $error);
+    }
+
+    /**
+     * Get Coordinates from Request
+     *
+     * @param Request $request
+     * @return ?array
+     */
+    public function getCoordinates(Request $request): ?array
+    {
+        $parameterValue = $request->get('coordinates');
+
+        if (is_null($parameterValue)) {
+            return null;
+        }
+
+        $matches = [];
+        if (preg_match('/^([0-2]):([0-2])$/', $parameterValue, $matches)) {
+            $row = $matches[1];
+            $col = $matches[2];
+            return [intval($row), intval($col)];
+        }
+
+        return null;
     }
 
     /**
@@ -70,10 +147,11 @@ class GameController
         $response = new Response();
 
         $parameters = ['showNewGame' => true];
+
         if (!is_null($board)) {
             $parameters = [
                 'showNewGame' => false,
-                'cellLayout' => $board->getCellLayoutRender(),
+                'cellLayout' => $this->gameService->getCellLayoutRender($board->getCurrentLayout()),
                 'winner' => $board->getWinner(),
                 'error' => $error,
             ];
@@ -87,7 +165,17 @@ class GameController
 
             $response->send();
         } catch (Exception $e) {
-            (new Response('', Response::HTTP_NOT_FOUND))->send();
+            $this->sendNotFound();
         }
+    }
+
+    /**
+     * Send a HTTP_NOT_FOUND Response
+     *
+     * @return void
+     */
+    private function sendNotFound(): void
+    {
+        (new Response('', Response::HTTP_NOT_FOUND))->send();
     }
 }
