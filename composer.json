@@ -20,6 +20,7 @@
     "phpunit/phpunit": "^9.5"
   },
   "require": {
-    "symfony/http-foundation": "^5.4"
+    "symfony/http-foundation": "^5.4",
+    "twig/twig": "^3.3"
   }
 }

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TicTacToe</title>
+</head>
+<body>
+<h1>Tic Tac Toe</h1>
+{% if showNewGame %}
+    Who has the first move?<br/>
+    <a href="/new/player">Player</a> | <a href="/new/computer">Computer</a>
+{% else %}
+    {{ include('board.html.twig') }}
+{% endif %}
+
+{% if error %}
+    <span style="color: red">ERROR</span>
+{% endif %}
+</body>
+</html>

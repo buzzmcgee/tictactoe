@@ -1,0 +1,34 @@
+<form action="/move" method="POST">
+    <table>
+        {% for row in cellLayout %}
+            <tr>
+                {% for col in row %}
+                    <td style="width:20px; height: 20px; text-align: center">
+                        {% if col['value'] or winner %}
+                            {{ col['value'] }}
+                        {% else %}
+                            <button name="coordinates"
+                                    value="{{ col['coordinates'] }}"
+                                    style="border: none; background: none; cursor: pointer"
+                            >_
+                            </button>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+</form>
+{% if winner is not null %}
+    <h2>
+        {% if winner == 1 %}
+            WINNER: PLAYER
+        {% elseif winner == -1 %}
+            WINNER: COMPUTER
+        {% else %}
+            IT'S A TIE
+        {% endif %}
+    </h2>
+{% endif %}
+<br/>
+<a href="/reset">restart</a>

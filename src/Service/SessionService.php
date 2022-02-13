@@ -23,6 +23,11 @@ class SessionService
         return true;
     }
 
+    /**
+     * create board from session data
+     *
+     * @return Board|null
+     */
     public function loadBoard(): ?Board
     {
         $boardLayout = $this->session->get('board_layout');
@@ -32,5 +37,15 @@ class SessionService
         }
 
         return null;
+    }
+
+    /**
+     * remove board layout from session
+     *
+     * @return void
+     */
+    public function clearBoard(): void
+    {
+        $this->session->remove('board_layout');
     }
 }

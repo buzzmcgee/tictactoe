@@ -4,14 +4,11 @@ namespace Buzz\TTT\Domain;
 
 class Board
 {
-    public const HUMAN = 1;
-    public const ENEMY = -1;
-    public const EMPTY = 0;
 
     private array $cellLayout = [
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0],
+        [_, _, _],
+        [_, _, _],
+        [_, _, _],
     ];
     private ?int $winner = null;
     private bool $tie = false;
