@@ -12,7 +12,7 @@ Init: `$ composer install`
 
 Use: `$ composer [options] <package>`
 
-## PHPUnit
+## PHPUnit (Windows)
 - phpunit.cmd `docker-compose exec php php phpunit.phar %*`
 
 Use: `$ phpunit`
